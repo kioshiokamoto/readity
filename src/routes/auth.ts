@@ -1,9 +1,12 @@
 import { Request, Response, Router } from 'express';
-import { User } from '../entities/User';
 import { validate, isEmpty } from 'class-validator';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
+
+
+import { User } from '../entities/User';
+import auth from '../middleware/auth'
 const register = async (req: Request, res: Response) => {
 	const { email, username, password } = req.body;
 
@@ -57,7 +60,7 @@ const login = async (req: Request, res: Response) => {
 			'Set-Cookie',
 			cookie.serialize('token', token, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV ==='production' ,
+				secure: process.env.NODE_ENV === 'production',
 				sameSite: 'strict',
 				maxAge: 60 * 60,
 				path: '/',
@@ -68,16 +71,28 @@ const login = async (req: Request, res: Response) => {
 	} catch (error) {}
 };
 
-const me = async (req: Request, res: Response) =>{
-	try {
-		
-	} catch (error) {
-		
-	}
-}
+const me =  (_: Request, res: Response) => {
+	return res.json(res.locals.user)
+};
+
+const logout = (_: Request, res: Response) => {
+	res.set(
+		'Set-Cookie',
+		cookie.serialize('token', '', {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'strict',
+			expires: new Date(0),
+			path: '/',
+		})
+	);
+	return res.status(200).json({success:true});
+};
 
 const router = Router();
 router.post('/register', register);
 router.post('/login', login);
+router.get('/logout', auth, logout);
+router.get('/me', auth, me);
 
 export default router;

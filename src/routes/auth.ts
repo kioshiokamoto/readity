@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { User } from '../entities/User';
+import {validate} from 'class-validator'
 
 const register = async (req: Request, res: Response) => {
 	const { email, username, password } = req.body;
@@ -9,6 +10,12 @@ const register = async (req: Request, res: Response) => {
 
 		// TODO: Create de user
 		const user = new User({ email, username, password });
+
+		const errors = await validate(user);
+
+		if(errors.length > 0){
+			return res.status(400).json({errors})
+		}
         await user.save();
 		// TODO: Return the user
         return res.status(201).json(user);
@@ -19,6 +26,6 @@ const register = async (req: Request, res: Response) => {
 };
 
 const router = Router();
-router.post('/', register);
+router.post('/register', register);
 
 export default router;

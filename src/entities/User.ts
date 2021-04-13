@@ -1,22 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
+import { IsEmail, Min } from 'class-validator';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, Index, UpdateDateColumn } from 'typeorm';
 
 @Entity('users')
 export class User extends BaseEntity {
-
 	constructor(user: Partial<User>) {
-        super();
+		super();
 		Object.assign(this, user);
 	}
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column({unique:true})
-    email: string
+	@Index()
+    @IsEmail()
+	@Column({ unique: true })
+	email: string;
 
-    @Column({unique:true})
-    username: string
+	@Index()
+    @Min(3,{message:'Username must be at leas 3 characters long'})
+	@Column({ unique: true })
+	username: string;
 
-    @Column()
-    password: string
+	@Column()
+    @Min(6,{message:'password must be at leas 6 characters long'})
+	password: string;
 
+    @UpdateDateColumn()
+    updatedAt: Date;
 }

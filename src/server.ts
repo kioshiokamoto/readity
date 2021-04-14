@@ -9,6 +9,7 @@ dotenv.config();
 //Rutas
 import authRoutes from './routes/auth'
 import postRoutes from './routes/posts'
+import subRoutes from './routes/subs'
 
 import trim from './middleware/trim'
 
@@ -23,6 +24,7 @@ app.get('/',(_,res)=>res.send('Working well!'))
 
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/subs', subRoutes);
 
 const PORT = process.env.PORT
 app.listen(PORT, async ()=>{

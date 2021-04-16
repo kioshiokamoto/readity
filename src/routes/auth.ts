@@ -4,9 +4,16 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
 
+import User from '../entities/User';
+import auth from '../middleware/auth';
 
-import User  from '../entities/User';
-import auth from '../middleware/auth'
+const mapErrors = (errors: Object[]) => {
+	return errors.reduce((prev: any, err: any) => {
+		prev[err.property] = Object.entries(err.constraints)[0][1];
+		return prev;
+	}, {});
+};
+
 const register = async (req: Request, res: Response) => {
 	const { email, username, password } = req.body;
 
@@ -28,7 +35,7 @@ const register = async (req: Request, res: Response) => {
 		errors = await validate(user);
 
 		if (errors.length > 0) {
-			return res.status(400).json({ errors });
+			return res.status(400).json(mapErrors(errors));
 		}
 		await user.save();
 		// Return the user
@@ -71,8 +78,8 @@ const login = async (req: Request, res: Response) => {
 	} catch (error) {}
 };
 
-const me =  (_: Request, res: Response) => {
-	return res.json(res.locals.user)
+const me = (_: Request, res: Response) => {
+	return res.json(res.locals.user);
 };
 
 const logout = (_: Request, res: Response) => {
@@ -86,7 +93,7 @@ const logout = (_: Request, res: Response) => {
 			path: '/',
 		})
 	);
-	return res.status(200).json({success:true});
+	return res.status(200).json({ success: true });
 };
 
 const router = Router();

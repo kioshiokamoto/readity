@@ -7,7 +7,6 @@ import InputGroup from '../components/InputGroup';
 export default function Login() {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
-	const [agreement, setAgreement] = useState(false);
 	const [errors, setErrors] = useState<any>({});
 
 	const router = useRouter();

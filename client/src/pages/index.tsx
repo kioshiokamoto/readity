@@ -1,22 +1,29 @@
-import { Fragment, useEffect, useState } from 'react';
-import Head from 'next/head';
-import Link from 'next/link';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { GetServerSideProps } from 'next';
+import Head from 'next/head';
+import Link from 'next/link';
 
-import { Post } from '../types';
 
 dayjs.extend(relativeTime);
+export const getServerSideProps:GetServerSideProps = async ()=>{
+	try {
+		const res = await axios.get('/posts');
+	
+		return {
+			props: {posts:res.data}
+		}
+		
+	} catch (error) {
+		return {
+			props: {error: 'Something went wrong'}
+		}
+	}
+}
 
-export default function Home() {
-	const [posts, setPosts] = useState<Post[]>([]);
-	useEffect(() => {
-		axios
-			.get('/posts')
-			.then((res) => setPosts(res.data))
-			.catch((err) => console.log(err));
-	}, []);
+export default function Home({posts}) {
+	
 	return (
 		<div className="pt-12">
 			<Head>
@@ -32,7 +39,7 @@ export default function Home() {
 								<p>V</p>
 							</div>
 							{/* Post data section */}
-							<div className="w-full p2">
+							<div className="w-full p-2">
 								<div className="flex items-center">
 									<Link href={`/r/${post.subName}`}>
 										<div className="flex items-center">
@@ -55,6 +62,28 @@ export default function Home() {
 											<a className="mx-1 hover:underline">{dayjs(post.createdAt).fromNow()}</a>
 										</Link>
 									</p>
+								</div>
+								<Link href={post.url}>
+									<a className="my-1 text-lg font-medium">{post.title}</a>
+								</Link>
+								{post.body && <p className="my-1 text-sm">{post.body}</p>}
+								<div className="flex">
+									<Link href={post.url}>
+										<a>
+											<div className="px-1 py-1 mr-1 text-xs text-gray-400 rounded cursor-pointer hover:bg-gray-200">
+												<i className="mr-1 fas fa-comment-alt fa-xs"></i>
+												<span className="font-bold">20 comments</span>
+											</div>
+										</a>
+									</Link>
+									<div className="px-1 py-1 mr-1 text-xs text-gray-400 rounded cursor-pointer hover:bg-gray-200">
+										<i className="mr-1 fas fa-share fa-xs"></i>
+										<span className="font-bold">Share</span>
+									</div>
+									<div className="px-1 py-1 mr-1 text-xs text-gray-400 rounded cursor-pointer hover:bg-gray-200">
+										<i className="mr-1 fas fa-bookmark fa-xs"></i>
+										<span className="font-bold">Save</span>
+									</div>
 								</div>
 							</div>
 						</div>

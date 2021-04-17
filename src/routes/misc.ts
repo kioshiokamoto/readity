@@ -5,7 +5,7 @@ import User from '../entities/User';
 import Vote from '../entities/Vote';
 import auth from '../middleware/auth';
 
-const vote = async (req: Request, res: Response) => {
+const voteAction = async (req: Request, res: Response) => {
 	const { identifier, slug, commentIdentifier, value } = req.body;
 
 	//Validate vote value
@@ -28,7 +28,6 @@ const vote = async (req: Request, res: Response) => {
 			vote = await Vote.findOne({ user, post });
 		}
 
-        
 		if (!vote && value === 0) {
 			//if no vote  and  value ===0 return error
 			return res.status(404).json({ error: 'Vote not found' });
@@ -47,9 +46,12 @@ const vote = async (req: Request, res: Response) => {
 			vote.save();
 		}
 
-        post = await Post.findOneOrFail({identifier, slug}, {relations: ['comments','sub','votes']})
+		post = await Post.findOneOrFail({ identifier, slug }, { relations: ['comments','comments.votes', 'sub', 'votes'] });
 
-        return res.json(post)
+        post.setUserVote(user)
+        post.comments.forEach(c => c.setUserVote(user))
+
+		return res.json(post);
 	} catch (error) {
 		return res.status(500).json({ error: 'Something went wrong' });
 	}
@@ -57,6 +59,6 @@ const vote = async (req: Request, res: Response) => {
 
 const router = Router();
 
-router.post('/vote', auth, vote);
+router.post('/vote', auth, voteAction);
 
 export default router;

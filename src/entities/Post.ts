@@ -1,4 +1,4 @@
-import { Expose } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { AfterLoad, BeforeInsert, Column, Entity as TOEntity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { makeId, slugify } from '../util/helpers';
 import Comment from './Comments';
@@ -44,7 +44,7 @@ export default class Post extends Entity {
 	@OneToMany(()=>Comment, comment => comment.post)
 	comments: Comment[]
 
-	
+	@Exclude()
 	@OneToMany(()=>Vote, vote=>vote.post)
     votes:Vote[]
 
@@ -52,11 +52,22 @@ export default class Post extends Entity {
 		return `/r/${this.subName}/${this.identifier}/${this.slug}`
 	}
 
+	@Expose() get commentCount(): number{
+		return this.comments?.length
+	}
+	@Expose () get voteScore():number{
+		return this.votes?.reduce((prev,curr)=> prev + (curr.value || 0),0)
+	}
 	// protected url:string
 	// @AfterLoad()
 	// createFields(){
 	// 	this.url = `/r/${this.subName}/${this.identifier}/${this.slug}`
 	// }
+	protected userVote:number
+	setUserVote(user:User){
+		const index = this.votes?.findIndex(v => v.username = user.username)
+		this.userVote = index >  -1 ? this.votes[index].value :0 
+	}
 
 
     @BeforeInsert()

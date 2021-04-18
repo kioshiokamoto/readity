@@ -4,6 +4,8 @@ import Axios from 'axios';
 import { useRouter } from 'next/router';
 
 import '../styles/globals.css';
+import '../styles/icons.css';
+
 
 import Navbar from '../components/Navbar';
 

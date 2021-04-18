@@ -1,13 +1,16 @@
-import { AppProps } from 'next/app';
-import { Fragment } from 'react';
 import Axios from 'axios';
+import { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
-
+import Navbar from '../components/Navbar';
+import { AuthProvider } from '../context/auth';
 import '../styles/globals.css';
 import '../styles/icons.css';
 
 
-import Navbar from '../components/Navbar';
+
+
+
+
 
 Axios.defaults.baseURL = `http://localhost:5000/api`;
 Axios.defaults.withCredentials = true;
@@ -18,10 +21,10 @@ function App({ Component, pageProps }: AppProps) {
 	const authRoute = authRoutes.includes(pathname);
 
 	return (
-		<Fragment>
+		<AuthProvider>
 			{!authRoute && <Navbar />}
 			<Component {...pageProps} />
-		</Fragment>
+		</AuthProvider>
 	);
 }
 

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/router';
 
-import {useAuthDispatch} from '../context/auth'
+import {useAuthDispatch, useAuthState} from '../context/auth'
 
 import InputGroup from '../components/InputGroup';
 
@@ -15,8 +15,10 @@ export default function Login() {
 	const [errors, setErrors] = useState<any>({});
 
 	const dispatch= useAuthDispatch();
+	const {authenticated} = useAuthState()
 
 	const router = useRouter();
+	if(authenticated) router.push('/')
 
 	const submitForm = async (event: FormEvent) => {
 		event.preventDefault();
@@ -29,7 +31,7 @@ export default function Login() {
 					password,
 				}
 			);
-			dispatch({type:'LOGIN',payload:res.data})
+			dispatch('LOGIN',res.data)
 			router.push('/');
 		} catch (errors) {
 			setErrors(errors.response.data);

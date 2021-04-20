@@ -13,7 +13,7 @@ import '../styles/icons.css';
 Axios.defaults.baseURL = `http://localhost:5000/api`;
 Axios.defaults.withCredentials = true;
 
-const fetcher = async(url)=> {
+const fetcher = async (url)=> {
 	try {
 		const res = await axios.get(url)
 		return res.data

@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import React, { createRef, Fragment, useEffect, useState } from 'react';
+import React, { ChangeEvent, createRef, Fragment, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import Image from 'next/image';
 import classnames from 'classnames';
@@ -8,6 +8,7 @@ import classnames from 'classnames';
 import PostCard from '../../components/PostCard';
 import { Sub } from '../../types';
 import { useAuthState } from '../../context/auth';
+import axios from 'axios';
 
 const SubPage = () => {
 	//localstate
@@ -20,19 +21,40 @@ const SubPage = () => {
 
 	const subName = router.query.sub;
 
-	const { data: sub, error } = useSWR<Sub>(subName ? `/subs/${subName}` : null);
+	const { data: sub, error, revalidate } = useSWR<Sub>(subName ? `/subs/${subName}` : null);
 
-    useEffect(() => {
-        if(!sub) return
-        setOwnSub(authenticated&&  user.username === sub.username)
-    }, [sub])
+	useEffect(() => {
+		if (!sub) return;
+		setOwnSub(authenticated && user && user.username === sub.username);
+	}, [sub]);
 
+	const openFileInput = (type: string) => {
+		if (!ownSub) return;
+		fileInputRef.current.name = type;
+		fileInputRef.current.click();
+	};
 
+	const uploadImage = async (event: ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files[0];
+
+		const formData = new FormData();
+		formData.append('file', file);
+		formData.append('type', fileInputRef.current.name);
+
+		try {
+			await axios.post<Sub>(`/subs/${sub.name}/image`, formData, {
+				headers: { 'Content-Type': 'multipart/form-data' },
+			});
+			revalidate();
+		} catch (err) {
+			console.log(err);
+		}
+	};
 	if (error) {
 		router.push('/');
 	}
 
-	let postsMarkup;
+	let postsMarkup = <></>;
 	if (!sub) {
 		postsMarkup = <p className="text-lg text-center">Loading...</p>;
 	} else if (sub.posts.length === 0) {
@@ -40,6 +62,7 @@ const SubPage = () => {
 	} else {
 		postsMarkup = sub.posts.map((post) => <PostCard key={post.identifier} post={post} />);
 	}
+
 	return (
 		<div>
 			<Head>
@@ -47,11 +70,14 @@ const SubPage = () => {
 			</Head>
 			{sub && (
 				<Fragment>
-					<input type="file" hidden ref={fileInputRef} />
+					<input type="file" hidden ref={fileInputRef} onChange={uploadImage} />
 					{/* Sub info and images */}
 					<div>
 						{/* Banner Image */}
-						<div className={classnames('bg-blue-500', { 'cursor-pointer': ownSub })}>
+						<div
+							className={classnames('bg-blue-500', { 'cursor-pointer': ownSub })}
+							onClick={() => openFileInput('banner')}
+						>
 							{sub.bannerUrl ? (
 								<div
 									className="h-56 bg-blue-500"
@@ -73,7 +99,8 @@ const SubPage = () => {
 									<Image
 										src={sub.imageUrl}
 										alt="Sub"
-										className="rounded-full"
+										className={classnames('rounded-full', { 'cursor-pointer': ownSub })}
+										onClick={() => openFileInput('image')}
 										width={70}
 										height={70}
 									/>

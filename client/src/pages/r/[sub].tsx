@@ -9,6 +9,7 @@ import PostCard from '../../components/PostCard';
 import { Sub } from '../../types';
 import { useAuthState } from '../../context/auth';
 import axios from 'axios';
+import Sidebar from '../../components/Sidebar';
 
 const SubPage = () => {
 	//localstate
@@ -60,6 +61,7 @@ const SubPage = () => {
 	} else if (sub.posts.length === 0) {
 		postsMarkup = <p className="text-lg text-center">No posts submitted yet</p>;
 	} else {
+		// @ts-ignore
 		postsMarkup = sub.posts.map((post) => <PostCard key={post.identifier} post={post} />);
 	}
 
@@ -117,6 +119,7 @@ const SubPage = () => {
 					{/* Post & Sidebar */}
 					<div className="container flex pt-5">
 						<div className="w-160">{postsMarkup}</div>
+						<Sidebar sub={sub}/>
 					</div>
 				</Fragment>
 			)}

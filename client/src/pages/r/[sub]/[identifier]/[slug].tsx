@@ -12,21 +12,25 @@ import Sidebar from '../../../../components/Sidebar';
 import Axios from 'axios';
 import { useAuthState } from '../../../../context/auth';
 import ActionButton from '../../../../components/ActionButton';
+import { FormEvent, useState } from 'react';
+import axios from 'axios';
 
 dayjs.extend(relativeTime);
 // NOSONAR
 export default function PostPage() {
 	// Local state
-
+	const [newComment, setNewComment] = useState('');
 	// Global state
-	const { authenticated } = useAuthState();
+	const { authenticated, user } = useAuthState();
 
 	// Utils
 	const router = useRouter();
 	const { identifier, sub, slug } = router.query;
 
 	const { data: post, error } = useSWR<Post>(identifier && slug ? `/posts/${identifier}/${slug}` : null);
-	const { data: comments } = useSWR<Comment[]>(identifier && slug ? `/posts/${identifier}/${slug}/comments` : null);
+	const { data: comments, revalidate } = useSWR<Comment[]>(
+		identifier && slug ? `/posts/${identifier}/${slug}/comments` : null
+	);
 	console.log(comments);
 	if (error) router.push('/');
 
@@ -38,17 +42,31 @@ export default function PostPage() {
 		if ((!comment && value === post.userVote) || (comment && comment.userVote === value)) value = 0;
 
 		try {
-			const res = await Axios.post('/misc/vote', {
+			await Axios.post('/misc/vote', {
 				identifier,
 				slug,
 				commentIdentifier: comment?.identifier,
 				value,
 			});
-
-			console.log(res.data);
+			revalidate();
 		} catch (err) {
 			console.log(err);
 		}
+	};
+	const submitComment = async (e: FormEvent) => {
+		e.preventDefault();
+		if (newComment.trim() === '') return;
+		try {
+			await axios.post(`/posts/${post.identifier}/${post.slug}/comments`, {
+				body: newComment,
+			});
+			setNewComment('')
+			revalidate()
+
+		} catch (error) {
+			console.log(error)
+		}
+		
 	};
 
 	return (
@@ -142,8 +160,45 @@ export default function PostPage() {
 										</div>
 									</div>
 								</div>
+								{/* Comments input area */}
+								<div className="pl-10 pr-6 mb-4">
+									{authenticated ? (
+										<div>
+											<p className="mb-1 text-xs">
+												Comment as{' '}
+												<Link href={`/u/${user.username}`}>
+													<a className="font-semibold text-blue-500">{user.username}</a>
+												</Link>
+											</p>
+											<form onSubmit={submitComment}>
+												<textarea
+													className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-gray-600"
+													onChange={(e) => setNewComment(e.target.value)}
+													value={newComment}
+												/>
+												<div className="flex justify-end">
+													<button className="px-3 py-1 blue button" disabled={newComment.trim()==='' ? true : false}>Comment</button>
+												</div>
+											</form>
+										</div>
+									) : (
+										<div className="flex items-center justify-between px-2 py-4 border border-gray-200 rounded">
+											<p className="font-semibold text-gray-400">
+												Log in or sign up to leave a comment
+											</p>
+											<div>
+												<Link href="/login">
+													<a className="px-4 py-1 mr-4 hollow blue button">Login</a>
+												</Link>
+												<Link href="/register">
+													<a className="px-4 py-1 hollow blue button">Sign up</a>
+												</Link>
+											</div>
+										</div>
+									)}
+								</div>
 								<hr />
-								{/* Comments section */}
+								{/* Comments feed */}
 								{comments?.map((comment) => (
 									<div className="flex" key={comment.identifier}>
 										{/* Vote section */}

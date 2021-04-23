@@ -35,8 +35,8 @@ const getPosts = async (_: Request, res: Response) => {
 			relations: ['comments', 'votes', 'sub'],
 		});
 
-		if(res.locals.user){
-			posts.forEach(p=> p.setUserVote(res.locals.user))
+		if (res.locals.user) {
+			posts.forEach((p) => p.setUserVote(res.locals.user));
 		}
 
 		return res.json(posts);
@@ -52,9 +52,13 @@ const getPost = async (req: Request, res: Response) => {
 		const post = await Post.findOneOrFail(
 			{ identifier, slug },
 			{
-				relations: ['sub'],
+				relations: ['sub', 'votes'],
 			}
 		);
+
+		if (res.locals.user) {
+			post.setUserVote(res.locals.user);
+		}
 
 		return res.json(post);
 	} catch (error) {
@@ -76,6 +80,7 @@ const commentOnPost = async (req: Request, res: Response) => {
 			user,
 			post,
 		});
+
 		await comment.save();
 
 		return res.json(comment);
@@ -89,7 +94,7 @@ const router = Router();
 
 router.post('/', user, auth, createPost);
 router.get('/', user, getPosts);
-router.get('/:identifier/:slug', getPost);
+router.get('/:identifier/:slug', user, getPost);
 router.post('/:identifier/:slug/comments', user, auth, commentOnPost);
 
 export default router;

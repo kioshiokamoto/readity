@@ -29,26 +29,29 @@ const createPost = async (req: Request, res: Response) => {
 };
 
 const getPosts = async (req: Request, res: Response) => {
-	const currentPage:number = (req.query.page || 0) as number
-	const postsPerPage:number = (req.query.count || 8) as number
-
+	const currentPage: number = (req.query.page || 1) as number;
+	const postsPerPage: number = (req.query.count || 8) as number;
 
 	try {
 		const posts = await Post.find({
-			order: { createdAt: 'DESC' },
+			order: {
+				createdAt: 'DESC',
+			},
 			relations: ['comments', 'votes', 'sub'],
 			skip: currentPage * postsPerPage,
-			take: postsPerPage
+			take: postsPerPage,
 		});
 
 		if (res.locals.user) {
 			posts.forEach((p) => p.setUserVote(res.locals.user));
 		}
 
-		return res.json(posts);
+		return res.status(200).json(posts);
 	} catch (error) {
-		console.log(error);
-		res.status(400).json({ error: 'Something went wrong' });
+		console.log({ error });
+		return res.status(500).json({
+			error: 'Something went wrong',
+		});
 	}
 };
 
@@ -58,7 +61,7 @@ const getPost = async (req: Request, res: Response) => {
 		const post = await Post.findOneOrFail(
 			{ identifier, slug },
 			{
-				relations: ['sub', 'votes','comments'],
+				relations: ['sub', 'votes', 'comments'],
 			}
 		);
 
@@ -75,7 +78,7 @@ const getPost = async (req: Request, res: Response) => {
 
 const commentOnPost = async (req: Request, res: Response) => {
 	const { identifier, slug } = req.params;
-	const {body} = req.body;
+	const { body } = req.body;
 
 	const user = res.locals.user;
 	try {
@@ -96,27 +99,27 @@ const commentOnPost = async (req: Request, res: Response) => {
 	}
 };
 
-const getPostComments = async (req:Request, res:Response) =>{
-	const {identifier,slug} = req.params
+const getPostComments = async (req: Request, res: Response) => {
+	const { identifier, slug } = req.params;
 	try {
-		const post =await Post.findOneOrFail({identifier, slug})
+		const post = await Post.findOneOrFail({ identifier, slug });
 
 		const comments = await Comment.find({
-			where:{post},
-			order:{createdAt:'DESC'},
-			relations:['votes']
-		})
+			where: { post },
+			order: { createdAt: 'DESC' },
+			relations: ['votes'],
+		});
 
-		if(res.locals.user){
-			comments.forEach(c=>c.setUserVote(res.locals.user))
+		if (res.locals.user) {
+			comments.forEach((c) => c.setUserVote(res.locals.user));
 		}
 
-		return res.json(comments)
+		return res.json(comments);
 	} catch (error) {
-		console.log(error)
-		return res.status(500).json({error:'Something went wrong'})
+		console.log(error);
+		return res.status(500).json({ error: 'Something went wrong' });
 	}
-}
+};
 
 const router = Router();
 

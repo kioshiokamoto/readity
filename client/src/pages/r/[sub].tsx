@@ -62,7 +62,7 @@ const SubPage = () => {
 		postsMarkup = <p className="text-lg text-center">No posts submitted yet</p>;
 	} else {
 		// @ts-ignore
-		postsMarkup = sub.posts.map((post) => <PostCard key={post.identifier} post={post} />);
+		postsMarkup = sub.posts.map((post) => <PostCard key={post.identifier} post={post} revalidate={revalidate} />);
 	}
 
 	return (

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Head from 'next/head';
@@ -15,6 +16,8 @@ export default function Home() {
 	const [observedPost, setObservedPost] = useState('');
 
 	const { data: topSubs } = useSWR<Sub[]>('/misc/top-subs');
+	const description = "Redity is a network of communities based on people's interests. Find communities you're interested in, and become part of an online community!"
+	const title ="Readity: the front page of the internet"
 
 	const { authenticated } = useAuthState();
 
@@ -24,10 +27,10 @@ export default function Home() {
 			revalidateAll: true,
 		}
 	);
-	console.log(data)
-	// TODO: ANALIZAR CON DETENIMIENTO!
+
 	const posts: Post[] = data ? [].concat(...data) : [];
-	//const isInitialLoading = !data && !error;
+
+	const isInitialLoading = !data && !error;
 
 	const observeElement = (element: HTMLElement) => {
 		if (!element) return;
@@ -58,16 +61,20 @@ export default function Home() {
 	return (
 		<Fragment>
 			<Head>
-				<title>Readity: the front page of the internet</title>
+				<title>{title}</title>
+				<meta name="description" content={description}></meta>
+				<meta property="og:description" content={description}/>
+				<meta property="og:title" content={title}/>
+				<meta property="twitter:description" content={description}/>
+				<meta property="twitter:title" content={title}/>
 			</Head>
 			<div className="container flex pt-4">
 				{/* Post feed */}
 				<div className="w-full px-2 md:w-160 md:px-0">
-					{isValidating && <p className="text-lg text-center">Loading</p>}
-					{posts && posts?.map((post) => (
-						<PostCard key={post.identifier} post={post} revalidate={revalidate} />
-					))} 
-					{isValidating &&  posts.length > 0 && <p className="text-lg text-center">Loading more...</p>}
+					{isInitialLoading && <p className="text-lg text-center">Loading</p>}
+					{posts &&
+						posts?.map((post) => <PostCard key={post.identifier} post={post} revalidate={revalidate} />)}
+					{isValidating && posts.length > 0 && <p className="text-lg text-center">Loading more...</p>}
 				</div>
 				{/* side bar */}
 				<div className="hidden px-4 ml-6 md:block w-80 md:px-0">

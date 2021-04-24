@@ -17,11 +17,14 @@ interface PostCardProps {
 }
 
 export default function PostCard({
-	post: { identifier, slug, voteScore, subName, username, url, createdAt, title, body, commentCount, userVote },
+	post: { identifier, slug, voteScore, subName, username, url, createdAt, title, body, commentCount, userVote, sub },
 	revalidate,
 }: PostCardProps) {
 	const { authenticated } = useAuthState();
 	const router = useRouter();
+
+	const isInSubPage = router.pathname === '/r/[sub]'; // /r/[sub]
+
 	const vote = async (value) => {
 		if (!authenticated) router.push('/');
 
@@ -63,18 +66,19 @@ export default function PostCard({
 			{/* Post data section */}
 			<div className="w-full p-2">
 				<div className="flex items-center">
-					<Link href={`/r/${subName}`}>
-						<div className="flex items-center">
-							{/* Doesn work with Fragment */}
-							<img
-								src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"
-								className="w-6 h-6 mr-1 rounded-full cursor-pointer"
-							/>
-							<a className="text-xs font-bold cursor-pointer hover:underline">/r/{subName}</a>
-						</div>
-					</Link>
+					{!isInSubPage && (
+						<>
+							<Link href={`/r/${subName}`}>
+								<div className="flex items-center">
+									<img src={sub.imageUrl} className="w-6 h-6 mr-1 rounded-full cursor-pointer" />
+									<a className="text-xs font-bold cursor-pointer hover:underline">/r/{subName}</a>
+								</div>
+							</Link>
+							<span className="mx-1 text-xs text-gray-500">•</span>
+						</>
+					)}
 					<p className="text-xs text-gray-500">
-						<span className="mx-1">•</span> Posted by
+						Posted by
 						<Link href={`/u/${username}`}>
 							<a className="mx-1 hover:underline">/u/{username}</a>
 						</Link>

@@ -68,6 +68,7 @@ const login = async (req: Request, res: Response) => {
 			'Set-Cookie',
 			cookie.serialize('token', token, {
 				httpOnly: true,
+				//Eliminar secure si no cuenta con https
 				secure: process.env.NODE_ENV === 'production',
 				sameSite: 'strict',
 				maxAge: 60 * 60,
@@ -88,6 +89,7 @@ const logout = (_: Request, res: Response) => {
 		'Set-Cookie',
 		cookie.serialize('token', '', {
 			httpOnly: true,
+			//Eliminar secure si no cuenta con https
 			secure: process.env.NODE_ENV === 'production',
 			sameSite: 'strict',
 			expires: new Date(0),

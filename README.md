@@ -9,12 +9,12 @@ Clon de Reddit
 
 **Servidor:** Express, Typeorm, Cookie, JsonWebToken
 
-  
+
 ## Screenshots
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](https://github.com/kioshiokamoto/readity/blob/main/preview/preview.png?raw=true)
 
-  
+
 ## Run Locally
 
 Clonar el proyecto
@@ -40,4 +40,6 @@ Inicializar servidor
   npm run dev
 ```
 
-  
+ ### Referencia de proyecto:
+
+[Classed](https://www.youtube.com/channel/UC2-slOJImuSc20Drbf88qvg)

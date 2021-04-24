@@ -3,7 +3,7 @@ import { isEmpty } from 'class-validator';
 import { getRepository } from 'typeorm';
 import multer, { FileFilterCallback } from 'multer';
 import path from 'path';
-import fs from 'fs'
+import fs from 'fs';
 
 import auth from '../middleware/auth';
 import user from '../middleware/user';
@@ -84,7 +84,6 @@ const ownSub = async (req: Request, res: Response, next: NextFunction) => {
 		res.locals.sub = sub;
 
 		return next();
-
 	} catch (error) {
 		res.status(500).json({ error: 'Something went wrong' });
 	}
@@ -113,24 +112,24 @@ const uploadSubImage = async (req: Request, res: Response) => {
 		const type = req.body.type;
 
 		if (type !== 'image' && type !== 'banner') {
-			fs.unlinkSync(req.file.path)
+			fs.unlinkSync(req.file.path);
 			return res.status(400).json({ error: 'Invalid Type' });
 		}
 
-		let oldImageUrn:string =''
+		let oldImageUrn: string = '';
 		if (type === 'image') {
-			oldImageUrn = sub.imageUrn ?? ''
+			oldImageUrn = sub.imageUrn ?? '';
 			sub.imageUrn = req.file.filename;
 		} else if (type === 'banner') {
-			oldImageUrn = sub.bannerUrn ?? ''
+			oldImageUrn = sub.bannerUrn ?? '';
 			sub.bannerUrn = req.file.filename;
 		}
 
 		await sub.save();
 
-		if(oldImageUrn!==''){
-			fs.unlinkSync(`public\/images\/${oldImageUrn}`)
-			//fs.unlinkSync(`public\\images\\${oldImageUrn}`) 
+		if (oldImageUrn !== '') {
+			fs.unlinkSync(`public\/images\/${oldImageUrn}`);
+			//fs.unlinkSync(`public\\images\\${oldImageUrn}`)
 		}
 
 		return res.json(sub);
@@ -138,11 +137,30 @@ const uploadSubImage = async (req: Request, res: Response) => {
 		return res.status(400).json({ error: 'Something went wrong' });
 	}
 };
+const searchSubs = async (req: Request, res: Response) => {
+	try {
+		const name = req.params.name;
+		if (isEmpty(name)) {
+			return res.status(400).json({ error: 'Name must not be empty' });
+		}
+
+		const subs = await getRepository(Sub)
+			.createQueryBuilder()
+			.where('LOWER(name) LIKE :name', { name: `%${name.toLocaleLowerCase().trim()}%` })
+			.getMany();
+
+		return res.json(subs);
+	} catch (error) {
+		console.log(error)
+		return res.status(500).json({error:'Something went wrong'})
+	}
+};
 
 const router = Router();
 
 router.post('/', user, auth, createSub);
 router.get('/:name', user, getSub);
+router.get('/search/:name', searchSubs);
 router.post('/:name/image', user, auth, ownSub, upload.single('file'), uploadSubImage);
 
 export default router;

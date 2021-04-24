@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { FormEvent, useState } from 'react';
@@ -13,7 +14,6 @@ export default function submit() {
 
 	const router = useRouter();
 
-
 	const { sub: subName } = router.query;
 	const { data: sub, error } = useSWR<Sub>(subName ? `/subs/${subName}` : null);
 	if (error) router.push('/');
@@ -23,11 +23,11 @@ export default function submit() {
 		if (title.trim() === '') return;
 
 		try {
-			const {data:post} = await axios.post<Post>('/posts', { title: title.trim(), body, sub: sub.name });
-            router.push(`/r/${sub.name}/${post.identifier}/${post.slug}`)
+			const { data: post } = await axios.post<Post>('/posts', { title: title.trim(), body, sub: sub.name });
+			router.push(`/r/${sub.name}/${post.identifier}/${post.slug}`);
 		} catch (error) {
-            console.log(error)
-        }
+			console.log(error);
+		}
 	};
 
 	return (
@@ -48,10 +48,10 @@ export default function submit() {
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
 							/>
-							<div 
-                                className="absolute mb-2 text-sm text-gray-500 select-none"
-                                style={{top:11, right:10}}
-                            >
+							<div
+								className="absolute mb-2 text-sm text-gray-500 select-none"
+								style={{ top: 11, right: 10 }}
+							>
 								{title.trim().length}/300
 							</div>
 						</div>
@@ -78,3 +78,16 @@ export default function submit() {
 		</div>
 	);
 }
+
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
+	try {
+		const cookie = req.headers.cookie;
+		if (!cookie) throw new Error('Missing auth token cookie');
+
+		await axios.get('/auth/me', { headers: { cookie } });
+
+		return { props: {} };
+	} catch (error) {
+		res.writeHead(307, { Location: '/login' }).end();
+	}
+};

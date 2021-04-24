@@ -1,20 +1,43 @@
-# Awesome Project Build with TypeORM
 
-Steps to run this project:
+# Readity
 
-1. Run `npm i` command
-2. Setup database settings inside `ormconfig.json` file
-3. Run `npm start` command
+Clon de Reddit
 
 
-## Limpiar bd
+## Stack tecnologico
+**Cliente:** React, Nextjs, TailwindCSS
+
+**Servidor:** Express, Typeorm, Cookie, JsonWebToken
+
+  
+## Screenshots
+
+![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+
+  
+## Run Locally
+
+Clonar el proyecto
 ```bash
-npm run typeorm schema:drop 
+  git clone https://github.com/kioshiokamoto/readity
 ```
-## migrations! (se utiliza cuando la sincronizacion esta en false)
-```bash
-npm run typeorm migration:create --  --name nombre-de-migracion
-npm run typeorm migration:generate --  --name nombre-de-migracion
 
-npm run typeorm migration:run
+Ir a la ruta de proyecto
+
+```bash
+  cd readity
 ```
+
+Instalar dependencias
+
+```bash
+  npm install && cd client && npm install
+```
+
+Inicializar servidor
+
+```bash
+  npm run dev
+```
+
+  
